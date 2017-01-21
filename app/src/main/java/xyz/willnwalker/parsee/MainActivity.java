@@ -18,8 +18,6 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    SharedPreferences sharedPreferences;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,14 +42,6 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        //Where our actual code begins
-        sharedPreferences = getPreferences(Context.MODE_PRIVATE);
-
-        if(sharedPreferences.getBoolean("FirstRun",true)){
-            sharedPreferences.edit().putBoolean("FirstRun",false).apply();
-
-        }
     }
 
     @Override
