@@ -14,19 +14,33 @@ import com.google.firebase.database.ValueEventListener;
 
 public class Database {
 
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference ref;
+    FirebaseDatabase database;
+    DatabaseReference mDatabase;
+
+    final String KEY = "USERS";
+
     public Database() {
-        
+        database = FirebaseDatabase.getInstance();
+        mDatabase = database.getReference(KEY);
+        addListener();
     }
 
-    public void set(String key, String value) {
-        DatabaseReference ref = database.getReference(key);
-        ref.setValue(value);
+    public User createUser(String uid, String displayName) {
+        User user = new User(uid, displayName);
+        mDatabase.child(uid).setValue(user);
+        return user;
     }
+
+    public void getUser(String uid) {
+    }
+
+    public void deleteUser(String uid) {
+        mDatabase.child(uid).removeValue();
+    }
+
 
     public void addListener() {
-        ref.addValueEventListener(new ValueEventListener() {
+        mDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String value = dataSnapshot.getValue(String.class);
@@ -38,5 +52,9 @@ public class Database {
                 Log.d("cancel", "Error: " + databaseError.toException());
             }
         });
+    }
+
+    public void removeListeners() {
+
     }
 }
