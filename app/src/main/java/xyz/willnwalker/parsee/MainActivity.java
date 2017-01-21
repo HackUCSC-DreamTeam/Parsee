@@ -1,5 +1,8 @@
 package xyz.willnwalker.parsee;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -26,7 +29,9 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final String TAG = "xyz.willnwalker.parsee";
+    private static final String TAG = "parsee.mainactivity";
+    private static final int LOGIN_ACCOUNT = 2148;
+    private SharedPreferences sharedPreferences;
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
     private MapView mapView;
@@ -86,6 +91,13 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
+
+        //First run check
+        sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        //Check if user signed in-- if not, display login/create account
+        if(firebaseAuth.getCurrentUser()==null){
+            startActivityForResult(new Intent(this,LoginActivity.class), LOGIN_ACCOUNT);
+        }
     }
 
     @Override
@@ -187,5 +199,21 @@ public class MainActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         mapView.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == LOGIN_ACCOUNT) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                Bundle b = data.getExtras();
+                firebaseAuth.signInWithEmailAndPassword(b.getString("username"),b.getString("password"));
+            }
+            else{
+                //User must've clicked the back button, exit in this case
+                finish();
+            }
+        }
     }
 }
