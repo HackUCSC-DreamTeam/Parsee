@@ -24,6 +24,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import com.google.firebase.storage.FirebaseStorage;
 import com.mapbox.mapboxsdk.MapboxAccountManager;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity
     private Database database;
     private TextView user_name;
     private LocationManager locationManager;
+    private FirebaseStorage firebaseStorage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +71,7 @@ public class MainActivity extends AppCompatActivity
         user_name = (TextView) findViewById(R.id.user_name);
 
         //Location init
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        /*locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         LocationListener locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
                 CameraPosition position = new CameraPosition.Builder().target(new LatLng(location.getLatitude(),location.getLongitude())).zoom(17).bearing(180).build();
@@ -80,7 +82,7 @@ public class MainActivity extends AppCompatActivity
             public void onProviderEnabled(String provider) {}
 
             public void onProviderDisabled(String provider) {}
-        };
+        };*/
 
         //Firebase init
         //database = new Database();
