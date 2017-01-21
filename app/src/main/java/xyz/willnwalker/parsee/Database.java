@@ -69,14 +69,31 @@ public class Database {
     }
 
     private void addListener() {
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                GenericTypeIndicator<List<User>> t = new GenericTypeIndicator<List<User>>() {};
+                Log.d("SINGLE_LISTENER", users.toString() + " " + getUsers().size());
+
+                List<User> users = dataSnapshot.getValue(t);
+                setUsers(users);
+                Log.d("Database Test", getUser("0") + "");
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
         mDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(final DataSnapshot dataSnapshot) {
                 GenericTypeIndicator<List<User>> t = new GenericTypeIndicator<List<User>>() {};
+                Log.d("Listener", users.toString() + " " + getUsers().size());
 
                 List<User> users = dataSnapshot.getValue(t);
                 setUsers(users);
-                Log.d("Listener", users.toString() + " " + getUsers().size());
                 Log.d("Database Test", getUser("0") + "");
             }
 

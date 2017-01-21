@@ -20,7 +20,7 @@ public class User {
     public String uid;
     public String displayName;
     public String testString;
-    public List<User> friends;
+    public List<Object> friends;
     public Location myLocation;
 
     public User() {
