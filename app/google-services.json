@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "806176320239-oq0k28jre022adedd38amgk2rtjhanbk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "xyz.willnwalker.parsee",
+            "certificate_hash": "9FD5BCFF161D331CE05B6EB6F6011CF73AC629CF"
+          }
+        },
+        {
           "client_id": "806176320239-q0125je3mgnbpp7r7n161dieid0ps4cm.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
