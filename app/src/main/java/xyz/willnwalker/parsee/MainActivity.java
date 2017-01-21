@@ -33,13 +33,16 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "parsee.mainactivity";
     private static final int LOGIN_ACCOUNT = 2148;
     private FirebaseAuth firebaseAuth;
-    private FirebaseAuth.AuthStateListener authStateListener;
+    private MyAuthStateListener authStateListener;
     private MapView mapView;
     private Database database;
     private TextView user_name;
@@ -47,7 +50,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        database = new Database();
+        /*database = new Database();
+        database.createUser("0", "Will");
+        Log.d("TEST", database.getUser("0").displayName);*/
 
         MapboxAccountManager.start(this, "pk.eyJ1Ijoid2lsbG53YWxrZXIiLCJhIjoiY2l5NzU5YWw0MDAycjMzbzZtbnIycWFvbyJ9.bze7QA84drv6yb37eK8xqg");
 
@@ -71,24 +76,7 @@ public class MainActivity extends AppCompatActivity
         //Firebase init
         //database = new Database();
         firebaseAuth = FirebaseAuth.getInstance();
-        authStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    //User userData = database.getUser(firebaseAuth.getCurrentUser().getUid());
-                    //user_name.setText(userData.displayName);
-                    //String displayName = databaseReference.child(user.getUid());
-                    //Log.d(TAG,displayName);
-                } else {
-                    // User is signed out
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
-                    startActivityForResult(new Intent(getApplicationContext(),LoginActivity.class), LOGIN_ACCOUNT);
-                }
-            }
-        };
+        authStateListener = new MyAuthStateListener();
 
         //Mapbox init
         mapView = (MapView) findViewById(R.id.mapView);
@@ -102,25 +90,23 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
-
-        //Check if user signed in-- if not, display login/create account
-        /*if(firebaseAuth.getCurrentUser()==null){
-            startActivityForResult(new Intent(this,LoginActivity.class), LOGIN_ACCOUNT);
-        }*/
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        firebaseAuth.addAuthStateListener(authStateListener);
+        if (!authStateListener.added.get()) {
+            firebaseAuth.addAuthStateListener(authStateListener);
+            authStateListener.added.set(true);
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (authStateListener != null) {
-            firebaseAuth.removeAuthStateListener(authStateListener);
-        }
+//        if (authStateListener != null) {
+//            firebaseAuth.removeAuthStateListener(authStateListener);
+//        }
     }
 
     @Override
@@ -233,6 +219,8 @@ public class MainActivity extends AppCompatActivity
                                 Log.d(TAG,task.getException().toString());
                             }
                         }
+
+
                     });
                     /*String key = databaseReference.child("USERS").push().getKey();
                     User user = new User(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));
@@ -256,5 +244,26 @@ public class MainActivity extends AppCompatActivity
     public boolean logout(MenuItem item){
         FirebaseAuth.getInstance().signOut();
         return true;
+    }
+
+    private class MyAuthStateListener implements FirebaseAuth.AuthStateListener {
+        @Override
+        public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user != null) {
+                // User is signed in
+                Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                //User userData = database.getUser(firebaseAuth.getCurrentUser().getUid());
+                //user_name.setText(userData.displayName);
+                //String displayName = databaseReference.child(user.getUid());
+                //Log.d(TAG,displayName);
+            } else {
+                // User is signed out
+                Log.d(TAG, "onAuthStateChanged:signed_out");
+                startActivityForResult(new Intent(getApplicationContext(),LoginActivity.class), LOGIN_ACCOUNT);
+            }
+        }
+
+        AtomicBoolean added = new AtomicBoolean(false);
     }
 }
