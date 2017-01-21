@@ -50,23 +50,31 @@ public class LoginActivity extends AppCompatActivity {
     public void login(View v){
         final String u = service.getText().toString();
         final String p = passwordText.getText().toString();
-        FirebaseAuth.getInstance().signInWithEmailAndPassword(u,p).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if(!task.isSuccessful()){
-                    Log.d(TAG,"login failed");
-                    Toast.makeText(getApplicationContext(),"Login failed!",Toast.LENGTH_LONG).show();
+        if(u.equals("")){
+            Toast.makeText(getApplicationContext(),"Please enter your email.",Toast.LENGTH_LONG).show();
+        }
+        else if(p.equals("")){
+            Toast.makeText(getApplicationContext(),"Please enter your password.",Toast.LENGTH_LONG).show();
+        }
+        else{
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(u,p).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if(!task.isSuccessful()){
+                        Log.d(TAG,"login failed");
+                        Toast.makeText(getApplicationContext(),"Login failed! Please check your email and password and try again.",Toast.LENGTH_LONG).show();
+                    }
+                    else{
+                        Bundle b = new Bundle();
+                        b.putString("username",u);
+                        b.putString("password",p);
+                        Intent i = new Intent();
+                        i.putExtras(b);
+                        setResult(RESULT_OK,i);
+                        finish();
+                    }
                 }
-                else{
-                    Bundle b = new Bundle();
-                    b.putString("username",u);
-                    b.putString("password",p);
-                    Intent i = new Intent();
-                    i.putExtras(b);
-                    setResult(RESULT_OK,i);
-                    finish();
-                }
-            }
-        });
+            });
+        }
     }
 }

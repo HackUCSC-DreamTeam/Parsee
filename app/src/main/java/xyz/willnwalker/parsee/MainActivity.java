@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
+                    startActivityForResult(new Intent(getApplicationContext(),LoginActivity.class), LOGIN_ACCOUNT);
                 }
             }
         };
@@ -215,5 +216,10 @@ public class MainActivity extends AppCompatActivity
                 finish();
             }
         }
+    }
+
+    public boolean logout(MenuItem item){
+        FirebaseAuth.getInstance().signOut();
+        return true;
     }
 }
