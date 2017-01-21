@@ -2,13 +2,12 @@ package xyz.willnwalker.parsee;
 
 import android.content.Intent;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -27,14 +26,12 @@ import com.google.firebase.auth.FirebaseUser;
 
 import com.mapbox.mapboxsdk.MapboxAccountManager;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
-import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -46,13 +43,11 @@ public class MainActivity extends AppCompatActivity
     private MapView mapView;
     private Database database;
     private TextView user_name;
+    private LocationManager locationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        /*database = new Database();
-        database.createUser("0", "Will");
-        Log.d("TEST", database.getUser("0").displayName);*/
 
         MapboxAccountManager.start(this, "pk.eyJ1Ijoid2lsbG53YWxrZXIiLCJhIjoiY2l5NzU5YWw0MDAycjMzbzZtbnIycWFvbyJ9.bze7QA84drv6yb37eK8xqg");
 
@@ -72,6 +67,20 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         user_name = (TextView) findViewById(R.id.user_name);
+
+        //Location init
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        LocationListener locationListener = new LocationListener() {
+            public void onLocationChanged(Location location) {
+                CameraPosition position = new CameraPosition.Builder().target(new LatLng(location.getLatitude(),location.getLongitude())).zoom(17).bearing(180).build();
+            }
+
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+            public void onProviderEnabled(String provider) {}
+
+            public void onProviderDisabled(String provider) {}
+        };
 
         //Firebase init
         //database = new Database();
@@ -212,7 +221,8 @@ public class MainActivity extends AppCompatActivity
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()){
                                 Log.d(TAG,"new account created!");
-                                //database.createUser(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));
+                                database = new Database();
+                                database.createUser(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));
                             }
                             else{
                                 Log.d(TAG,"new account not created!");
