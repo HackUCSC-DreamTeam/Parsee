@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    User userData = database.getUser(firebaseAuth.getCurrentUser().getUid());
+                    //User userData = database.getUser(firebaseAuth.getCurrentUser().getUid());
                     //user_name.setText(userData.displayName);
                     //String displayName = databaseReference.child(user.getUid());
                     //Log.d(TAG,displayName);
@@ -218,16 +218,18 @@ public class MainActivity extends AppCompatActivity
             if (resultCode == RESULT_OK) {
                 final Bundle b = data.getExtras();
                 if(b.getBoolean("newAccount")){
-                    Log.d(TAG,"it was a new account");
+                    Log.d(TAG,"it was a new account:");
+                    Log.d(TAG,"username: "+b.getString("username"));
+                    Log.d(TAG,"password: "+b.getString("password"));
                     firebaseAuth.createUserWithEmailAndPassword(b.getString("username"),b.getString("password")).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()){
                                 Log.d(TAG,"new account created!");
-                                database.createUser(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));
+                                //database.createUser(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));
                             }
                             else{
-                                Log.d(TAG,"not created!");
+                                Log.d(TAG,"new account not created!");
                                 Log.d(TAG,task.getException().toString());
                             }
                         }

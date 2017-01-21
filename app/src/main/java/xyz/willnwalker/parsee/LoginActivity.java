@@ -95,8 +95,8 @@ public class LoginActivity extends AppCompatActivity {
                 Intent i = new Intent();
                 Bundle b = data.getExtras();
                 b.putBoolean("newAccount",true);
-                Log.d(TAG,b.getString("username"));
-                Log.d(TAG,b.getString("password"));
+                //Log.d(TAG,b.getString("username"));
+                //Log.d(TAG,b.getString("password"));
                 i.putExtras(b);
                 setResult(RESULT_OK,i);
                 finish();
