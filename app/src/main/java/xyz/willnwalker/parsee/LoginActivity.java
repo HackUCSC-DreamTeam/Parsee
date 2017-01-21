@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseAuth;
 public class LoginActivity extends AppCompatActivity {
 
     private final String TAG = "parsee.loginactivity";
+    private static final int CREATE_ACCOUNT = 2149;
     private boolean checked=false;
     private EditText service;
     private EditText passwordText;
@@ -75,6 +76,31 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 }
             });
+        }
+    }
+
+    public void create(View v){
+        Intent i = new Intent(this,NewAccountActivity.class);
+        startActivityForResult(i,CREATE_ACCOUNT);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG,"Activity Result received.");
+        // Check which request we're responding to
+        if (requestCode == CREATE_ACCOUNT) {
+            Log.d(TAG,"code was create account");
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                Intent i = new Intent();
+                Bundle b = data.getExtras();
+                b.putBoolean("newAccount",true);
+                Log.d(TAG,b.getString("username"));
+                Log.d(TAG,b.getString("password"));
+                i.putExtras(b);
+                setResult(RESULT_OK,i);
+                finish();
+            }
         }
     }
 }

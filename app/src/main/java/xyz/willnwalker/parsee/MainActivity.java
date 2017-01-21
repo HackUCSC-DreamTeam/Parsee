@@ -1,8 +1,6 @@
 package xyz.willnwalker.parsee;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -17,7 +15,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -31,10 +33,11 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = "parsee.mainactivity";
     private static final int LOGIN_ACCOUNT = 2148;
-    private SharedPreferences sharedPreferences;
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
     private MapView mapView;
+    private Database database;
+    private TextView user_name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +67,10 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        user_name = (TextView) findViewById(R.id.user_name);
+
         //Firebase init
+        //database = new Database();
         firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -73,6 +79,10 @@ public class MainActivity extends AppCompatActivity
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                    User userData = database.getUser(firebaseAuth.getCurrentUser().getUid());
+                    //user_name.setText(userData.displayName);
+                    //String displayName = databaseReference.child(user.getUid());
+                    //Log.d(TAG,displayName);
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -93,12 +103,10 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        //First run check
-        sharedPreferences = getPreferences(Context.MODE_PRIVATE);
         //Check if user signed in-- if not, display login/create account
-        if(firebaseAuth.getCurrentUser()==null){
+        /*if(firebaseAuth.getCurrentUser()==null){
             startActivityForResult(new Intent(this,LoginActivity.class), LOGIN_ACCOUNT);
-        }
+        }*/
     }
 
     @Override
@@ -208,8 +216,33 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == LOGIN_ACCOUNT) {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
-                Bundle b = data.getExtras();
-                firebaseAuth.signInWithEmailAndPassword(b.getString("username"),b.getString("password"));
+                final Bundle b = data.getExtras();
+                if(b.getBoolean("newAccount")){
+                    Log.d(TAG,"it was a new account");
+                    firebaseAuth.createUserWithEmailAndPassword(b.getString("username"),b.getString("password")).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if(task.isSuccessful()){
+                                Log.d(TAG,"new account created!");
+                                database.createUser(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));
+                            }
+                            else{
+                                Log.d(TAG,"not created!");
+                                Log.d(TAG,task.getException().toString());
+                            }
+                        }
+                    });
+                    /*String key = databaseReference.child("USERS").push().getKey();
+                    User user = new User(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));
+                    Map<String, Object> userValues = user.toMap();
+
+                    Map<String, Object> childUpdates = new HashMap<>();
+                    childUpdates.put("/USERS/"+key,userValues);
+                    databaseReference.updateChildren(childUpdates);*/
+                }
+                else{
+                    firebaseAuth.signInWithEmailAndPassword(b.getString("username"),b.getString("password"));
+                }
             }
             else{
                 //User must've clicked the back button, exit in this case
