@@ -24,7 +24,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mapbox.mapboxsdk.MapboxAccountManager;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -40,12 +44,12 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "parsee.mainactivity";
     private static final int LOGIN_ACCOUNT = 2148;
     private FirebaseAuth firebaseAuth;
+    private FirebaseDatabase firebaseDatabase;
     private MyAuthStateListener authStateListener;
     private MapView mapView;
     private Database database;
     private TextView user_name;
     private LocationManager locationManager;
-    private FirebaseStorage firebaseStorage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +89,7 @@ public class MainActivity extends AppCompatActivity
         };*/
 
         //Firebase init
-        //database = new Database();
+        firebaseDatabase = FirebaseDatabase.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
         authStateListener = new MyAuthStateListener();
 
@@ -223,8 +227,10 @@ public class MainActivity extends AppCompatActivity
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()){
                                 Log.d(TAG,"new account created!");
-                                database = new Database();
-                                database.createUser(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));
+                                DatabaseReference user = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid());
+                                user.child("displayName").setValue(b.getString("displayName"));
+                                /*database = new Database();
+                                database.createUser(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));*/
                             }
                             else{
                                 Log.d(TAG,"new account not created!");
@@ -265,6 +271,20 @@ public class MainActivity extends AppCompatActivity
             if (user != null) {
                 // User is signed in
                 Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                DatabaseReference userInfo = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("displayName");
+                userInfo.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        String received = (String) dataSnapshot.getValue();
+                        Log.d(TAG,received);
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
                 //User userData = database.getUser(firebaseAuth.getCurrentUser().getUid());
                 //user_name.setText(userData.displayName);
                 //String displayName = databaseReference.child(user.getUid());
