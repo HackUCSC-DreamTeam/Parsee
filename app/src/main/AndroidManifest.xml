@@ -34,6 +34,11 @@
             android:label="parsee"
             android:theme="@style/AppTheme">
         </activity>
+        <activity
+            android:name=".FriendActivity"
+            android:label="parsee"
+            android:theme="@style/AppTheme">
+        </activity>
     </application>
 
 </manifest>
