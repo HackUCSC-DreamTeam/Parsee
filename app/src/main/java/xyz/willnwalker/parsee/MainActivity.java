@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity
             public void onMapReady(MapboxMap mapboxMap) {
                 // Customize map with markers, polylines, etc.
                 map = mapboxMap;
-                toggleGps(!map.isMyLocationEnabled());
+                //toggleGps(!map.isMyLocationEnabled());
             }
         });
 
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation), 16));
             }
 
-            locationServices.addLocationListener(new LocationListener() {
+            locationServices.addLocationListener(   new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
                     if (location != null) {
@@ -136,6 +136,10 @@ public class MainActivity extends AppCompatActivity
                         // changes. When the user disables and then enables the location again, this
                         // listener is registered again and will adjust the camera once again.
                         map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location), 16));
+                        if(firebaseAuth.getCurrentUser()!=null){
+                            DatabaseReference userlocation = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("lastknownlocation");
+                            userlocation.setValue(location);
+                        }
                         locationServices.removeLocationListener(this);
                     }
                 }
@@ -281,8 +285,6 @@ public class MainActivity extends AppCompatActivity
                                 DatabaseReference user = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid());
                                 user.child("displayName").setValue(b.getString("displayName"));
                                 user.child("email").setValue(b.getString("username"));
-                                /*database = new Database();
-                                database.createUser(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));*/
                             }
                             else{
                                 Log.d(TAG,"new account not created!");
@@ -292,13 +294,6 @@ public class MainActivity extends AppCompatActivity
 
 
                     });
-                    /*String key = databaseReference.child("USERS").push().getKey();
-                    User user = new User(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));
-                    Map<String, Object> userValues = user.toMap();
-
-                    Map<String, Object> childUpdates = new HashMap<>();
-                    childUpdates.put("/USERS/"+key,userValues);
-                    databaseReference.updateChildren(childUpdates);*/
                 }
                 else{
                     firebaseAuth.signInWithEmailAndPassword(b.getString("username"),b.getString("password"));
