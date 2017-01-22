@@ -29,7 +29,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -46,6 +45,7 @@ import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity
@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity
     private LocationServices locationServices;
     private FloatingActionButton fab;
     private DrawerLayout drawer;
+    private ArrayList<MarkerViewOptions> markers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +111,8 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+
+        markers = new ArrayList<>();
     }
 
     private void toggleGps(boolean enableGps) {
@@ -428,6 +431,15 @@ public class MainActivity extends AppCompatActivity
                                         Double lat = Double.parseDouble(s[0]);
                                         Double lon = Double.parseDouble(s[1]);
                                         MarkerViewOptions markerViewOptions = new MarkerViewOptions().position(new LatLng(lat,lon)).title(user);
+                                        for(int i=0;i<markers.size();i++){
+                                            if(markers.get(i).getTitle().equals(user)){
+                                                map.removeMarker(markers.get(i).getMarker());
+                                                markers.remove(i);
+                                                markers.add(i,markerViewOptions);
+                                                map.addMarker(markerViewOptions);
+                                            }
+                                        }
+                                        markers.add(markerViewOptions);
                                         map.addMarker(markerViewOptions);
                                     }
                                 }
