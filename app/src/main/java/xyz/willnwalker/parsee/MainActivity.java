@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.text.InputType;
 import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -30,12 +29,14 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.mapbox.mapboxsdk.annotations.MarkerViewOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.location.LocationListener;
 import com.mapbox.mapboxsdk.MapboxAccountManager;
@@ -145,7 +146,7 @@ public class MainActivity extends AppCompatActivity
                         map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location), 16));
                         if(firebaseAuth.getCurrentUser()!=null){
                             DatabaseReference userlocation = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("lastknownlocation");
-                            userlocation.setValue(location);
+                            userlocation.setValue(location.getLatitude()+" "+location.getLongitude());
                         }
                         locationServices.removeLocationListener(this);
                     }
@@ -374,9 +375,9 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
             FirebaseUser user = firebaseAuth.getCurrentUser();
-            DatabaseReference db = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid());
             if (user != null) {
                 // User is signed in
+                DatabaseReference db = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid());
                 Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                 DatabaseReference username = db.child("displayName");
                 username.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -411,7 +412,39 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
 
-                //db.child("friends").
+                Query friends = db.child("friends").orderByKey();
+                friends.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot postSnapshot: dataSnapshot.getChildren()){
+                            Log.d(TAG,postSnapshot.getKey());
+                            final String user = (String)postSnapshot.getValue();
+                            firebaseDatabase.getReference("USERS").child(postSnapshot.getKey()).child("lastknownlocation").addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    if(dataSnapshot.getValue()!=null){
+                                        Log.d(TAG,dataSnapshot.toString());
+                                        String[] s = dataSnapshot.getValue().toString().split(" ");
+                                        Double lat = Double.parseDouble(s[0]);
+                                        Double lon = Double.parseDouble(s[1]);
+                                        MarkerViewOptions markerViewOptions = new MarkerViewOptions().position(new LatLng(lat,lon)).title(user);
+                                        map.addMarker(markerViewOptions);
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
             } else {
                 // User is signed out
                 Log.d(TAG, "onAuthStateChanged:signed_out");
