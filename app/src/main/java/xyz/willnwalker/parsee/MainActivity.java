@@ -1,12 +1,13 @@
 package xyz.willnwalker.parsee;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -29,9 +31,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.location.LocationListener;
 import com.mapbox.mapboxsdk.MapboxAccountManager;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.location.LocationServices;
 import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
@@ -43,13 +47,14 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = "parsee.mainactivity";
     private static final int LOGIN_ACCOUNT = 2148;
+    private static final int PERMISSIONS_LOCATION = 0;
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
     private MyAuthStateListener authStateListener;
     private MapView mapView;
-    private Database database;
-    private TextView user_name;
-    private LocationManager locationManager;
+    private MapboxMap map;
+    private LocationServices locationServices;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +63,9 @@ public class MainActivity extends AppCompatActivity
         MapboxAccountManager.start(this, "pk.eyJ1Ijoid2lsbG53YWxrZXIiLCJhIjoiY2l5NzU5YWw0MDAycjMzbzZtbnIycWFvbyJ9.bze7QA84drv6yb37eK8xqg");
 
         setContentView(R.layout.activity_main);
+        locationServices = LocationServices.getLocationServices(MainActivity.this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -71,22 +75,6 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        user_name = (TextView) findViewById(R.id.user_name);
-
-        //Location init
-        /*locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        LocationListener locationListener = new LocationListener() {
-            public void onLocationChanged(Location location) {
-                CameraPosition position = new CameraPosition.Builder().target(new LatLng(location.getLatitude(),location.getLongitude())).zoom(17).bearing(180).build();
-            }
-
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-            public void onProviderEnabled(String provider) {}
-
-            public void onProviderDisabled(String provider) {}
-        };*/
 
         //Firebase init
         firebaseDatabase = FirebaseDatabase.getInstance();
@@ -99,12 +87,74 @@ public class MainActivity extends AppCompatActivity
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(MapboxMap mapboxMap) {
-
                 // Customize map with markers, polylines, etc.
-
-
+                map = mapboxMap;
             }
         });
+
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(map!=null){
+                    toggleGps(!map.isMyLocationEnabled());
+                }
+            }
+        });
+    }
+
+    private void toggleGps(boolean enableGps) {
+        if (enableGps) {
+            // Check if user has granted location permission
+            if (!locationServices.areLocationPermissionsGranted()) {
+                ActivityCompat.requestPermissions(this, new String[]{
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_LOCATION);
+            } else {
+                enableLocation(true);
+            }
+        } else {
+            enableLocation(false);
+        }
+    }
+
+    private void enableLocation(boolean enabled) {
+        if (enabled) {
+            // If we have the last location of the user, we can move the camera to that position.
+            Location lastLocation = locationServices.getLastLocation();
+            if (lastLocation != null) {
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(lastLocation), 16));
+            }
+
+            locationServices.addLocationListener(new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
+                    if (location != null) {
+                        // Move the map camera to where the user location is and then remove the
+                        // listener so the camera isn't constantly updating when the user location
+                        // changes. When the user disables and then enables the location again, this
+                        // listener is registered again and will adjust the camera once again.
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location), 16));
+                        locationServices.removeLocationListener(this);
+                    }
+                }
+            });
+            fab.setImageResource(R.drawable.ic_my_location);
+        } else {
+            fab.setImageResource(R.drawable.ic_location_disabled);
+        }
+        // Enable or disable the location layer on the map
+        map.setMyLocationEnabled(enabled);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_LOCATION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                enableLocation(true);
+            }
+        }
     }
 
     @Override
@@ -229,6 +279,7 @@ public class MainActivity extends AppCompatActivity
                                 Log.d(TAG,"new account created!");
                                 DatabaseReference user = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid());
                                 user.child("displayName").setValue(b.getString("displayName"));
+                                user.child("email").setValue(b.getString("username"));
                                 /*database = new Database();
                                 database.createUser(firebaseAuth.getCurrentUser().getUid(),b.getString("displayName"));*/
                             }
@@ -271,13 +322,31 @@ public class MainActivity extends AppCompatActivity
             if (user != null) {
                 // User is signed in
                 Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                DatabaseReference userInfo = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("displayName");
-                userInfo.addListenerForSingleValueEvent(new ValueEventListener() {
+                DatabaseReference username = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("displayName");
+                username.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         String received = (String) dataSnapshot.getValue();
-                        Log.d(TAG,received);
+                        if(received!=null&&(!received.equals(""))){
+                            ((TextView)findViewById(R.id.user_name)).setText(received);
+                            Log.d(TAG,received);
+                        }
+                    }
 
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+                DatabaseReference useremail = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("email");
+                useremail.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        String received = (String) dataSnapshot.getValue();
+                        if(received!=null&&(!received.equals(""))){
+                            ((TextView)findViewById(R.id.user_email)).setText(received);
+                            Log.d(TAG,received);
+                        }
                     }
 
                     @Override
