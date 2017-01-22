@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_new_password"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -39,7 +40,8 @@
         android:id="@+id/passwordText"
         android:hint="Password"
         android:layout_below="@+id/serviceName"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:fontFamily="sans-serif" />
 
     <CheckBox
         android:text="Show Password"
@@ -58,7 +60,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/button3"
         android:onClick="submit"
+        android:layout_marginTop="10dp"
         android:layout_below="@+id/displayName"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="8dp" />
+        android:layout_centerHorizontal="true" />
+
 </RelativeLayout>
