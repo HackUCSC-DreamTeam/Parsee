@@ -31,7 +31,7 @@ public class NewAccountActivity extends AppCompatActivity {
     }
 
     protected void showPassword(View v){
-        checked=!checked;
+        this.checked=!checked;
         if(checked){
             passwordText.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
             passwordText.setSelection(passwordText.getText().length());
