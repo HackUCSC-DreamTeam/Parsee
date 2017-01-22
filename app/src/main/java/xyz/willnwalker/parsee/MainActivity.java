@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -260,6 +261,22 @@ public class MainActivity extends AppCompatActivity
                 }
             }).show();
         } else if (id == R.id.nav_friendrequests) {
+            final String userid = firebaseAuth.getCurrentUser().getUid();
+            Query FriendReqeusts = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("friend_requests").orderByKey();
+            FriendReqeusts.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (final DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                        Log.d(TAG,postSnapshot.toString());
+                        doDataStuff(userid, postSnapshot);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
 
         } else if (id == R.id.nav_friends) {
 
@@ -330,6 +347,7 @@ public class MainActivity extends AppCompatActivity
                             else{
                                 Log.d(TAG,"new account not created!");
                                 Log.d(TAG,task.getException().toString());
+                                System.exit(-1);
                             }
                         }
 
@@ -356,10 +374,11 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
             FirebaseUser user = firebaseAuth.getCurrentUser();
+            DatabaseReference db = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid());
             if (user != null) {
                 // User is signed in
                 Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                DatabaseReference username = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("displayName");
+                DatabaseReference username = db.child("displayName");
                 username.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -375,7 +394,7 @@ public class MainActivity extends AppCompatActivity
 
                     }
                 });
-                DatabaseReference useremail = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("email");
+                DatabaseReference useremail = db.child("email");
                 useremail.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -391,10 +410,8 @@ public class MainActivity extends AppCompatActivity
 
                     }
                 });
-                //User userData = database.getUser(firebaseAuth.getCurrentUser().getUid());
-                //user_name.setText(userData.displayName);
-                //String displayName = databaseReference.child(user.getUid());
-                //Log.d(TAG,displayName);
+
+                //db.child("friends").
             } else {
                 // User is signed out
                 Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -403,5 +420,36 @@ public class MainActivity extends AppCompatActivity
         }
 
         AtomicBoolean added = new AtomicBoolean(false);
+    }
+
+    private void doDataStuff(final String userid, final DataSnapshot postSnapshot){
+        new MaterialDialog.Builder(this).title("Friend Request")
+                .content(postSnapshot.getValue()+" would like to be your friend.")
+                .positiveText("Accept").negativeText("Deny").neutralText("Ignore")
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        postSnapshot.getRef().setValue(null);
+                    }
+                })
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        final DatabaseReference stuff = firebaseDatabase.getReference("USERS");
+                        stuff.child(userid).child("friends").child(postSnapshot.getKey()).setValue(postSnapshot.getValue());
+                        stuff.child(userid).child("displayName").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                stuff.child(postSnapshot.getKey()).child("friends").child(userid).setValue(dataSnapshot.getValue());
+                                postSnapshot.getRef().setValue(null);
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }).show();
     }
 }
