@@ -266,8 +266,11 @@ public class MainActivity extends AppCompatActivity
             }).show();
         } else if (id == R.id.nav_friendrequests) {
             final String userid = firebaseAuth.getCurrentUser().getUid();
-            Query FriendReqeusts = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("friend_requests").orderByKey();
-            FriendReqeusts.addListenerForSingleValueEvent(new ValueEventListener() {
+            Query FriendRequests = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("friend_requests").orderByKey();
+            if(FriendRequests.equals(null)){
+                Toast.makeText(this,"You have no pending Friend Requests.",Toast.LENGTH_LONG).show();
+            }
+            FriendRequests.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (final DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
@@ -283,13 +286,8 @@ public class MainActivity extends AppCompatActivity
             });
 
         } else if (id == R.id.nav_friends) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+            Intent i = new Intent(this,FriendActivity.class);
+            startActivity(i);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -440,7 +438,9 @@ public class MainActivity extends AppCompatActivity
                                             }
                                         }
                                         markers.add(markerViewOptions);
-                                        map.addMarker(markerViewOptions);
+                                        if(map!=null){
+                                            map.addMarker(markerViewOptions);
+                                        }
                                     }
                                 }
 
