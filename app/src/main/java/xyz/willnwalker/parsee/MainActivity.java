@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.text.InputType;
 import android.util.Log;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,7 +20,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -30,6 +33,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.location.LocationListener;
@@ -55,6 +59,7 @@ public class MainActivity extends AppCompatActivity
     private MapboxMap map;
     private LocationServices locationServices;
     private FloatingActionButton fab;
+    private DrawerLayout drawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +68,7 @@ public class MainActivity extends AppCompatActivity
         MapboxAccountManager.start(this, "pk.eyJ1Ijoid2lsbG53YWxrZXIiLCJhIjoiY2l5NzU5YWw0MDAycjMzbzZtbnIycWFvbyJ9.bze7QA84drv6yb37eK8xqg");
 
         setContentView(R.layout.activity_main);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         locationServices = LocationServices.getLocationServices(MainActivity.this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -89,7 +95,7 @@ public class MainActivity extends AppCompatActivity
             public void onMapReady(MapboxMap mapboxMap) {
                 // Customize map with markers, polylines, etc.
                 map = mapboxMap;
-                //toggleGps(!map.isMyLocationEnabled());
+                toggleGps(!map.isMyLocationEnabled());
             }
         });
 
@@ -181,7 +187,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -217,11 +222,46 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.nav_addfriend) {
+            drawer.closeDrawer(GravityCompat.START);
+            new MaterialDialog.Builder(this).title("Add Friend").content("Enter your friend's username in the box below.").positiveText("OK").negativeText("Cancel").input("Username", "", new MaterialDialog.InputCallback() {
+                @Override
+                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                    firebaseDatabase.getReference("REVERSE_USERS").child(input.toString()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            final String friended_uid = (String) dataSnapshot.getValue();
+                            if(friended_uid!=null){
+                                firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid()).child("displayName").addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        String current_username = (String) dataSnapshot.getValue();
+                                        if(current_username!=null){
+                                            firebaseDatabase.getReference("USERS").child(friended_uid).child("friend_requests").child(firebaseAuth.getCurrentUser().getUid()).setValue(current_username);
+                                        }
+                                    }
 
-        } else if (id == R.id.nav_slideshow) {
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+                            }
+                            else{
+                                Toast.makeText(getApplicationContext(),"User does not exist!",Toast.LENGTH_LONG).show();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+            }).show();
+        } else if (id == R.id.nav_friendrequests) {
+
+        } else if (id == R.id.nav_friends) {
 
         } else if (id == R.id.nav_manage) {
 
@@ -285,6 +325,7 @@ public class MainActivity extends AppCompatActivity
                                 DatabaseReference user = firebaseDatabase.getReference("USERS").child(firebaseAuth.getCurrentUser().getUid());
                                 user.child("displayName").setValue(b.getString("displayName"));
                                 user.child("email").setValue(b.getString("username"));
+                                firebaseDatabase.getReference("REVERSE_USERS").child(b.getString("displayName")).setValue(firebaseAuth.getCurrentUser().getUid());
                             }
                             else{
                                 Log.d(TAG,"new account not created!");
