@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity
             public void onMapReady(MapboxMap mapboxMap) {
                 // Customize map with markers, polylines, etc.
                 map = mapboxMap;
+                toggleGps(!map.isMyLocationEnabled());
             }
         });
 
