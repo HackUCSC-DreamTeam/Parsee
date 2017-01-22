@@ -11,6 +11,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
 
@@ -72,13 +73,35 @@ public class Database {
         mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                GenericTypeIndicator<Map<String, User>> t = new GenericTypeIndicator<Map<String, User>>() {};
+                Map<String, User> users = dataSnapshot.getValue(t);
+                List<User> listUsers = new ArrayList<User>();
+                for(Map.Entry<String, User> entries: users.entrySet()) {
+                    listUsers.add(entries.getValue());
+                }
+                Log.d("TEST1", listUsers.toString());
 
-                GenericTypeIndicator<List<User>> t = new GenericTypeIndicator<List<User>>() {};
-                Log.d("SINGLE_LISTENER", users.toString() + " " + getUsers().size());
+                setUsers(listUsers);
+//                Object object = dataSnapshot.getValue();
+//                Log.d("TEST1", object.toString());
+//                if(object instanceof Map) {
+//                    Map<String, User> map = object.get
+//                };
 
-                List<User> users = dataSnapshot.getValue(t);
-                setUsers(users);
-                Log.d("Database Test", getUser("0") + "");
+//                GenericTypeIndicator<Map<Object, Object>> t = new GenericTypeIndicator<Map<Object, Object>>() {};
+//                Map<Object, Object> users = dataSnapshot.getValue(t);
+//
+//                for(Map.Entry<Object, Object> entries: users.entrySet()) {
+//                    Log.d("MAPTEST", entries.getKey() + " : " + entries.getValue());
+//                }
+////                    setUsers(users);
+//                Log.d("Database Test", getUsers().toString());
+////                GenericTypeIndicator<List<User>> t = new GenericTypeIndicator<List<User>>() {};
+////                Log.d("SINGLE_LISTENER", users.toString() + " " + getUsers().size());
+////
+////                List<User> users = dataSnapshot.getValue(t);
+////                setUsers(users);
+////                Log.d("Database Test", getUsers().toString());
             }
 
             @Override
@@ -89,12 +112,15 @@ public class Database {
         mDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(final DataSnapshot dataSnapshot) {
-                GenericTypeIndicator<List<User>> t = new GenericTypeIndicator<List<User>>() {};
-                Log.d("Listener", users.toString() + " " + getUsers().size());
+                GenericTypeIndicator<Map<String, User>> t = new GenericTypeIndicator<Map<String, User>>() {};
+                Map<String, User> users = dataSnapshot.getValue(t);
+                List<User> listUsers = new ArrayList<User>();
+                for(Map.Entry<String, User> entries: users.entrySet()) {
+                    listUsers.add(entries.getValue());
+                }
+                Log.d("TEST1", listUsers.toString());
 
-                List<User> users = dataSnapshot.getValue(t);
-                setUsers(users);
-                Log.d("Database Test", getUser("0") + "");
+                setUsers(listUsers);
             }
 
             @Override
