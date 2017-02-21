@@ -65,14 +65,14 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<MarkerViewOptions> markers;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
 
-        MapboxAccountManager.start(this, "pk.eyJ1Ijoid2lsbG53YWxrZXIiLCJhIjoiY2l5NzU5YWw0MDAycjMzbzZtbnIycWFvbyJ9.bze7QA84drv6yb37eK8xqg");
+            MapboxAccountManager.start(this, "pk.eyJ1Ijoid2lsbG53YWxrZXIiLCJhIjoiY2l5NzU5YWw0MDAycjMzbzZtbnIycWFvbyJ9.bze7QA84drv6yb37eK8xqg");
 
-        setContentView(R.layout.activity_main);
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        locationServices = LocationServices.getLocationServices(MainActivity.this);
+            setContentView(R.layout.activity_main);
+            drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            locationServices = LocationServices.getLocationServices(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
