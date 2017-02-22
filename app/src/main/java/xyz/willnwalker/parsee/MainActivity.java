@@ -375,7 +375,9 @@ public class MainActivity extends AppCompatActivity
     private class MyAuthStateListener implements FirebaseAuth.AuthStateListener {
         @Override
         public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-            map.clear();
+            if(map!=null){
+                map.clear();
+            }
             FirebaseUser user = firebaseAuth.getCurrentUser();
             if (user != null) {
                 // User is signed in
