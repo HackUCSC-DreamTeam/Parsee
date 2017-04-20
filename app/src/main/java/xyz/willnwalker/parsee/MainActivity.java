@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -60,16 +61,15 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
     private MyAuthStateListener authStateListener;
-    private MapView mapView;
     private MapboxMap map;
+    private MapView mapView;
     private LocationServices locationServices;
-    private FloatingActionButton fab;
     private ArrayList<MarkerViewOptions> markers;
 
     @BindView(R.id.drawer_layout) DrawerLayout drawer;
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.nav_view) NavigationView navigationView;
-
+    @BindView(R.id.fab) FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity
         authStateListener = new MyAuthStateListener();
 
         //Mapbox init
-        MapView mapView = (MapView) findViewById(R.id.mapView);
+        mapView = (MapView) findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -107,17 +107,15 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(map!=null){
-                    toggleGps(!map.isMyLocationEnabled());
-                }
-            }
-        });
-
         markers = new ArrayList<>();
+    }
+
+    //Click Handlers
+    @OnClick(R.id.fab)
+    public void fabOnClick(View v) {
+        if(map!=null){
+            toggleGps(!map.isMyLocationEnabled());
+        }
     }
 
     private void toggleGps(boolean enableGps) {
