@@ -66,14 +66,9 @@ public class MainActivity extends AppCompatActivity
     private FloatingActionButton fab;
     private ArrayList<MarkerViewOptions> markers;
 
-    @BindView(R.id.drawer_layout)
-    DrawerLayout drawer;
-
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
-
-    @BindView(R.id.nav_view)
-    NavigationView navigationView;
+    @BindView(R.id.drawer_layout) DrawerLayout drawer;
+    @BindView(R.id.toolbar) Toolbar toolbar;
+    @BindView(R.id.nav_view) NavigationView navigationView;
 
 
     @Override
