@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "parsee.mainactivity";
-    private static final int LOGIN_ACCOUNT = 2148;
+    private static final int LOGIN_ACCOUNT = 2148; //Code for login activity
     private static final int PERMISSIONS_LOCATION = 0;
     private FirebaseAuth firebaseAuth;
     private FirebaseDatabase firebaseDatabase;
@@ -377,7 +377,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
             if(map!=null){
-                map.clear();
+                map.clear(); //Ensure past data isn't left on the map
             }
             FirebaseUser user = firebaseAuth.getCurrentUser();
             if (user != null) {
