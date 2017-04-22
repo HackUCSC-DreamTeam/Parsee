@@ -15,6 +15,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by William on 1/21/2017.
  */
@@ -24,16 +27,14 @@ public class LoginActivity extends AppCompatActivity {
     private final String TAG = "parsee.loginactivity";
     private static final int CREATE_ACCOUNT = 2149;
     private boolean checked=false;
-    private EditText service;
-    private EditText passwordText;
+    @BindView(R.id.serviceName) EditText service;
+    @BindView(R.id.passwordText) EditText passwordText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        service=(EditText)findViewById(R.id.serviceName);
-        passwordText=(EditText)findViewById(R.id.passwordText);
+        ButterKnife.bind(this);
     }
 
     protected void showPassword(View v){

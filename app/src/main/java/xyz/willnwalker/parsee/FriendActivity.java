@@ -26,13 +26,16 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by William on 1/22/2017.
  */
 
 public class FriendActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerView;
+    @BindView(R.id.friendList) RecyclerView recyclerView;
     private Query query;
     private FriendAdapter adapter;
     private ArrayList<String> adapterItems;
@@ -44,11 +47,11 @@ public class FriendActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friend);
+        ButterKnife.bind(this);
 
         query = db.child(auth.getUid())
                 .child("friends").orderByKey();
 
-        recyclerView = (RecyclerView) findViewById(R.id.friendList);
         adapter = new FriendAdapter(query, String.class, adapterItems, adapterKeys);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);

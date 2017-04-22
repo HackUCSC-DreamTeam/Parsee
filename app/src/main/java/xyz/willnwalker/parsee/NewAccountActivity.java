@@ -8,6 +8,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * Created by William on 1/21/2017.
  */
@@ -16,18 +19,15 @@ public class NewAccountActivity extends AppCompatActivity {
 
     private final String TAG = "parsee.newpactivity";
     private boolean checked=false;
-    private EditText service;
-    private EditText passwordText;
-    private EditText displayName;
+    @BindView(R.id.serviceName) EditText service;
+    @BindView(R.id.passwordText) EditText passwordText;
+    @BindView(R.id.displayName) EditText displayName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_account);
-
-        service=(EditText)findViewById(R.id.serviceName);
-        passwordText=(EditText)findViewById(R.id.passwordText);
-        displayName=(EditText)findViewById(R.id.displayName);
+        ButterKnife.bind(this);
     }
 
     protected void showPassword(View v){
