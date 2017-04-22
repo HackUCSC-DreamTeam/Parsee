@@ -70,6 +70,8 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.nav_view) NavigationView navigationView;
     @BindView(R.id.fab) FloatingActionButton fab;
     @BindView(R.id.mapView) MapView mapView;
+    @BindView(R.id.user_name) TextView user_name;
+    @BindView(R.id.user_email) TextView user_email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -388,7 +390,7 @@ public class MainActivity extends AppCompatActivity
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         String received = (String) dataSnapshot.getValue();
                         if(received!=null&&(!received.equals(""))){
-                            ((TextView)findViewById(R.id.user_name)).setText(received);
+                            user_name.setText(received);
                             Log.d(TAG,received);
                         }
                     }
@@ -404,7 +406,7 @@ public class MainActivity extends AppCompatActivity
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         String received = (String) dataSnapshot.getValue();
                         if(received!=null&&(!received.equals(""))){
-                            ((TextView)findViewById(R.id.user_email)).setText(received);
+                            user_email.setText(received);
                             Log.d(TAG,received);
                         }
                     }
