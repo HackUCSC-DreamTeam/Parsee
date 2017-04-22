@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity
     private FirebaseDatabase firebaseDatabase;
     private MyAuthStateListener authStateListener;
     private MapboxMap map;
-    private MapView mapView;
     private LocationServices locationServices;
     private ArrayList<MarkerViewOptions> markers;
 
@@ -70,6 +69,7 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.nav_view) NavigationView navigationView;
     @BindView(R.id.fab) FloatingActionButton fab;
+    @BindView(R.id.mapView) MapView mapView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +96,6 @@ public class MainActivity extends AppCompatActivity
         authStateListener = new MyAuthStateListener();
 
         //Mapbox init
-        mapView = (MapView) findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(new OnMapReadyCallback() {
             @Override
